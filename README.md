@@ -8,9 +8,12 @@ Contains programs and libraries.
 
 Libraries have the following structure:
 
-```
-+ library_folder
-|- init.lua # The entry point
-| ... # Maybe more files?
-\- _package.lua # The package definition
-```
++ The root folder named after the library itself
++ Library's entry point inside folder/init.lua
++ Also a package file `_package.lua`, which contains:
+  - Semantic versioning
+  - Package's description
+  - Author
+  - Dependencies
+
+This information is inteded to be used by package managers.
