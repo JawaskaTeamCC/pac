@@ -23,3 +23,90 @@
 -- Self updating!
 ------
 
+----
+-- Splits
+----
+function string:split(sep)
+  local sep, fields = sep or ":", {}
+  local pattern = string.format("([^%s]+)", sep)
+  self:gsub(pattern, function(c) fields[#fields+1] = c end)
+  return fields
+end
+
+----
+-- Makes the directories and default config files if not present.
+----
+do
+  if not fs.exists '.pac' then fs.makeDir '.pac' end
+  if not fs.exists '.pac/repos.info' then
+    local f = io.open('.pac/repos.info', 'w')
+    f:write 'jawaska=https://raw.githubusercontent.com/JawaskaTeam/computercraft-programs\n'
+    f:close()
+  end
+end
+
+local function decodeString(str)
+  local data = {}
+  for _, line in pairs(str:split '\n') do
+    local key, value = line:match '^%s*(.-)%s*=%s*(.-)%s*$'
+    data[key] = value
+  end
+  return data
+end
+
+----
+-- Decodes a properties file.
+----
+local function decode(file)
+  local f = io.open(file, 'r')
+  if f == nil then error('Couldn\'t open ' .. tostring(file)) end
+  local data = decodeString(f:read('*all'))
+  f:close()
+  return data
+end
+
+----
+-- Encodes a properties file.
+----
+local function encode(file, data)
+  local f = io.open(file, 'w')
+  for k, v in pairs(data) do
+    f:write(k)
+    f:write('=')
+    f:write(v)
+    f:write('\n')
+  end
+  f:close()
+end
+
+----
+-- Higher order function that creates an HTTP resource reader.
+----
+local function ResourceReader(root)
+  return function(sub, headers)
+    return http.get(root .. sub, headers)
+  end
+end
+
+----
+-- Looks up repositories and checks package names.
+----
+local function searchPackage(name)
+  local repos = decode '.pac/repos.info'
+  for repoName, source in pairs(repos) do
+    print('Scanning ' .. repoName)
+    local repoRead = ResourceReader(source)
+    local resp = repoRead('/index.info')
+    if resp == nil then error 'Null response' end
+    local index = decodeString(resp:readAll())
+    local repoData = index[name]
+    if repoData ~= nil then
+      local versionData = repoData:split ','
+      for k, v in pairs(versionData) do print(k, v) end
+      return nil
+    end
+  end
+  return nil
+end
+
+searchPackage 'vector'
