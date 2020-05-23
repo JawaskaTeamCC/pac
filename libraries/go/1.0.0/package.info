@@ -1,0 +1,7 @@
+name=go
+description=A simple spatial-tracking turtle movement library
+version=1.0.0
+files=init.lua
+author=sigmasoldier
+contact=contact me at minecraft hehe
+deps.vector=1.0.0

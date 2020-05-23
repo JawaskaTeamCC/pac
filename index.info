@@ -1,0 +1,4 @@
+vector=libraries/vector
+go=libraries/go
+inventory=libraries/inventory
+pandora=libraries/pandora
