@@ -104,6 +104,7 @@ end
 local function compareVersion(aStr, bStr)
   local a = parseVersion(aStr)
   local b = parseVersion(bStr)
+  if a[1] == nil or b[1] == nil then return 0 end
   if a[1] > b[1] then
     return 1
   elseif a[1] < b[1] then
@@ -261,14 +262,55 @@ elseif command == 'update' then
   local pkgs = fetchPackageData(pattern)
   print('Found #' .. (#pkgs) .. ' package/s')
   print('Updating...')
+  local localPkgs = decode('.pac/versions.info')
+  local updated = 0
   for k, v in pairs(pkgs) do
     drawBar(k - 1, #pkgs)
-    downloadPackage(v)
+    local verInfo = localPkgs[v.package.name]
+    if verInfo ~= nil then
+      if compareVersion(verInfo, v.package.version) == -1 then
+        downloadPackage(v)
+        localPkgs[v.package.name] = v.package.version
+        updated = updated + 1
+      end
+    end
   end
+  encode('.pac/versions.info', localPkgs)
   drawBar(#pkgs, #pkgs)
   print()
-  print('Done, updated ' .. #pkgs)
+  print('Done, updated ' .. updated .. ' package/s')
 elseif command == 'install' then
-
+  local _, glob, version = ...
+  if glob == nil or glob == '*' then
+    print 'Error: Install is not permited for targetting all packages!'
+    return
+  end
+  local pattern = globToPattern(glob)
+  local pkgs = fetchPackageData(pattern, version)
+  for i, pkg in pairs(pkgs) do
+    print('Installing ' .. pkg.package.name .. '...')
+    local deps = {}
+    for k, dep in pairs(pkg.package) do
+      local match = dep:match('^deps%.(.+)')
+      if match ~= nil then
+        deps[#deps + 1] = fetchPackageData(match)
+      end
+    end
+    print('Installing ' .. #deps .. ' additional dependencies')
+    local localPkgs = decode('.pac/versions.info')
+    for _, dep in pairs(deps) do
+      local verInfo = localPkgs[dep.package.name]
+      if verInfo ~= nil then
+        if compareVersion(verInfo, dep.package.version) == -1 then
+          downloadPackage(dep)
+          localPkgs[dep.package.name] = dep.package.version
+          updated = updated + 1
+        end
+      end
+    end
+    downloadPackage(pkg)
+    localPkgs[pkg.package.name] = pkg.package.version
+    encode('.pac/versions.info', localPkgs)
+  end
 elseif command == 'remove' then
 end
