@@ -324,16 +324,24 @@ elseif command == 'remove' then
   local removed = 0
   for k, v in pairs(localPkgs) do
     if k:match(pattern) then
-      print('Removing ' .. k)
+      print('  Removing ' .. k)
       local info = fetchPackageData(k)[1]
       if info == nil then
         print('ERROR! Cannot find package metadata for ' .. k ..'!')
         print('It will be removed from the registry, but folders and files must be erased manually!')
       else
-        
+        local cut = info.package.shortcut
+        if cut ~= nil then
+          fs.delete(cut)
+        end
+        fs.delete(info.package.install .. '/' .. info.package.name)
+        removed = removed + 1
+        localPkgs[info.package.name] = nil
       end
     end
   end
   encode('.pac/versions.info', localPkgs)
   print('Removed ' .. removed .. ' packages')
+else
+  print 'Wrong usage, use pac help'
 end
