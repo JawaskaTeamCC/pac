@@ -322,7 +322,7 @@ elseif command == 'remove' then
   local localPkgs = decode('.pac/versions.info')
   local pattern = globToPattern(glob)
   local removed = 0
-  for k, v in pairs(localPkgs)
+  for k, v in pairs(localPkgs) do
     if k:match(pattern) then
       print('Removing ' .. k)
       local info = fetchPackageData(k)[1]
