@@ -40,7 +40,7 @@ do
   if not fs.exists '.pac' then fs.makeDir '.pac' end
   if not fs.exists '.pac/repos.info' then
     local f = io.open('.pac/repos.info', 'w')
-    f:write 'jawaska=https://raw.githubusercontent.com/JawaskaTeam/computercraft-programs\n'
+    f:write 'jawaska=https://raw.githubusercontent.com/JawaskaTeam/computercraft-programs/master\n'
     f:close()
   end
   if not fs.exists '.pac/versions.info' then
