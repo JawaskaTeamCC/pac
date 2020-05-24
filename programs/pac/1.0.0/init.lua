@@ -145,7 +145,7 @@ end
 -- Looks up repositories and checks package names by pattern.
 -- Input name must be a match ready string.
 ----
-local function searchPackage(pattern, requireVersion)
+local function fetchPackageData(pattern, requireVersion)
   local repos = decode '.pac/repos.info'
   local packages = {}
   for repoName, source in pairs(repos) do
@@ -199,6 +199,7 @@ local function globToPattern(glob)
 end
 
 local command = ...
+local BAR_SYMBOL = '='
 
 if command == 'help' then
   term.setCursorPos(1, 1)
@@ -233,10 +234,26 @@ elseif command == 'update' then
   local _, glob = ...
   print('Updating ' .. glob .. '...')
   local pattern = globToPattern(glob)
-  local pkgs = searchPackage(pattern)
+  local pkgs = fetchPackageData(pattern)
   print('Found #' .. (#pkgs) .. ' package/s')
-  for k, v in pairs(pkgs) do
-    print(k, '-->>', v)
+  print('Updating...')
+  do
+    local width, bottom = term.getSize()
+    local maxWidth = width - 7
+    local stepSize = maxWidth / #pkgs
+    for k, v in pairs(pkgs) do
+      local i = k -1
+      term.setCursorPos(1, bottom)
+      term.write('[' .. BAR_SYMBOL:rep(stepSize * i))
+      term.setCursorPos(width - 6, bottom)
+      term.write(']' .. i .. '/' .. #pkgs)
+      os.sleep(1)
+    end
+    term.setCursorPos(1, bottom)
+    term.write('[' .. BAR_SYMBOL:rep(maxWidth))
+    term.setCursorPos(width - 6, bottom)
+    term.write(']' .. #pkgs .. '/' .. #pkgs)
+    print()
   end
 elseif command == 'install' then
 

@@ -4,6 +4,24 @@ Jawaska Team's Computercraft code repository.
 
 Contains programs and libraries.
 
+## Contributing
+
+Want your package to appear as an official package? Easy:
++ Fork the repository
++ Develop your things
++ Pull request to master **with squash commits**
++ Get the pull request accepted
+
+Package installation is advised to be at the own risk of the user, however if
+a package is reported as malicious, harming, or harassing towards a person,
+people group or such, it can be removed, or even rejected before pulling.
+Misleading package names, or package phishing can be also reported.
+
+In the case of misleading package names, if was unintentional it can be
+renamed.
+
+You can also become a moderator in order to help auditing packages.
+
 ## Structure
 
 The repository is divided in library folders, containing the version:
@@ -23,6 +41,7 @@ contact=some@contact
 site=some.site
 version=1.0.0
 files=init.lua
+install=lib
 deps.other-lib=1.0.0
 deps.some-other-lib=1.5.0
 ```
