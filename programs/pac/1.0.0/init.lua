@@ -204,6 +204,11 @@ local function downloadPackage(data)
     fout:write(res:readAll())
     fout:close()
   end
+  if data.package.shortcut ~= nil then
+    local fout = io.open(data.package.shortcut, 'w')
+    fout:write("require '" .. root .. "'")
+    fout:close()
+  end
 end
 
 ----
@@ -313,4 +318,22 @@ elseif command == 'install' then
     encode('.pac/versions.info', localPkgs)
   end
 elseif command == 'remove' then
+  local _, glob = ...
+  local localPkgs = decode('.pac/versions.info')
+  local pattern = globToPattern(glob)
+  local removed = 0
+  for k, v in pairs(localPkgs)
+    if k:match(pattern) then
+      print('Removing ' .. k)
+      local info = fetchPackageData(k)[1]
+      if info == nil then
+        print('ERROR! Cannot find package metadata for ' .. k ..'!')
+        print('It will be removed from the registry, but folders and files must be erased manually!')
+      else
+        
+      end
+    end
+  end
+  encode('.pac/versions.info', localPkgs)
+  print('Removed ' .. removed .. ' packages')
 end
