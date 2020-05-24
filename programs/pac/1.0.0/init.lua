@@ -206,7 +206,8 @@ local function downloadPackage(data)
   end
   if data.package.shortcut ~= nil then
     local fout = io.open(data.package.shortcut, 'w')
-    fout:write("require '" .. root .. "'")
+    fout:write([[-- Shortcut for ]]..data.package.name..[[\n
+shell.run('/]]..root..[[/init.lua', ...)]])
     fout:close()
   end
 end
