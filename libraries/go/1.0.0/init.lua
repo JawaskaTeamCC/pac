@@ -20,7 +20,7 @@
 ---
 -- Coordinate tracker movement system
 ---
-local vector = require 'vector'
+local vector = require 'lib/vector'
 local go = {}
 
 -- Static global position of the machine

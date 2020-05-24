@@ -43,6 +43,11 @@ do
     f:write 'jawaska=https://raw.githubusercontent.com/JawaskaTeam/computercraft-programs\n'
     f:close()
   end
+  if not fs.exists '.pac/versions.info' then
+    local f = io.open('.pac/versions.info', 'w')
+    f:write ''
+    f:close()
+  end
 end
 
 local function decodeString(str)
@@ -163,9 +168,10 @@ local function fetchPackageData(pattern, requireVersion)
         local location = data[1]
         local version = findLatestVersion(data, requireVersion)
         print('Acquiring ' .. name .. ' v' .. version .. ' info...')
+        local path = location .. '/' .. version
         local packageData = nil
         do
-          local res = repoRead(location .. '/' .. version .. '/package.info')
+          local res = repoRead(path .. '/package.info')
           if res == nil then error('Couldn\'t fetch package data, bad formed repository. Check out ' .. source .. location .. '/' .. version) end
           packageData = decodeString(res:readAll())
         end
@@ -173,7 +179,8 @@ local function fetchPackageData(pattern, requireVersion)
           name = name,
           repository = {
             name = repoName,
-            source = source
+            source = source,
+            path = path
           },
           package = packageData
         }
@@ -184,11 +191,18 @@ local function fetchPackageData(pattern, requireVersion)
 end
 
 ----
--- Fetches package from package data, downloads to passed folder.
+-- Downloads package from data table.
 ----
-local function downloadPackage(name, version, folder)
-  local info = searchPackage(name)
-  if not fs.exists(folder) then fs.makeDir(folder) end
+local function downloadPackage(data)
+  local root = (data.package.install or 'lib') .. '/' .. data.package.name
+  if not fs.exists(root) then fs.makeDir(root) end
+  for _, file in pairs(data.package.files:split(',')) do
+    local url = data.repository.source .. data.repository.path .. '/' .. file
+    local res = http.get(url)
+    local fout = io.open(root .. '/' .. file, 'w')
+    fout:write(res:readAll())
+    fout:close()
+  end
 end
 
 ----
@@ -200,6 +214,16 @@ end
 
 local command = ...
 local BAR_SYMBOL = '='
+local function drawBar(i, total)
+  local width, bottom = term.getSize()
+  local countStr = '] ' .. i .. '/' .. total
+  local maxWidth = width - countStr:len() + 1
+  local stepSize = maxWidth / total
+  term.setCursorPos(1, bottom)
+  term.write('[' .. BAR_SYMBOL:rep(stepSize * i))
+  term.setCursorPos(maxWidth, bottom)
+  term.write(countStr)
+end
 
 if command == 'help' then
   term.setCursorPos(1, 1)
@@ -232,29 +256,18 @@ Where <command> is one of:
 ]]
 elseif command == 'update' then
   local _, glob = ...
-  print('Updating ' .. glob .. '...')
-  local pattern = globToPattern(glob)
+  print('Updating ' .. (glob or 'all packages') .. '...')
+  local pattern = globToPattern(glob or '*')
   local pkgs = fetchPackageData(pattern)
   print('Found #' .. (#pkgs) .. ' package/s')
   print('Updating...')
-  do
-    local width, bottom = term.getSize()
-    local maxWidth = width - 7
-    local stepSize = maxWidth / #pkgs
-    for k, v in pairs(pkgs) do
-      local i = k -1
-      term.setCursorPos(1, bottom)
-      term.write('[' .. BAR_SYMBOL:rep(stepSize * i))
-      term.setCursorPos(width - 6, bottom)
-      term.write(']' .. i .. '/' .. #pkgs)
-      os.sleep(1)
-    end
-    term.setCursorPos(1, bottom)
-    term.write('[' .. BAR_SYMBOL:rep(maxWidth))
-    term.setCursorPos(width - 6, bottom)
-    term.write(']' .. #pkgs .. '/' .. #pkgs)
-    print()
+  for k, v in pairs(pkgs) do
+    drawBar(k - 1, #pkgs)
+    downloadPackage(v)
   end
+  drawBar(#pkgs, #pkgs)
+  print()
+  print('Done, updated ' .. #pkgs)
 elseif command == 'install' then
 
 elseif command == 'remove' then
