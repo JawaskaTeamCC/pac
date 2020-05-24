@@ -296,10 +296,10 @@ elseif command == 'install' then
   for i, pkg in pairs(pkgs) do
     print('Installing ' .. pkg.package.name .. '...')
     local deps = {}
-    for k, dep in pairs(pkg.package) do
-      local match = dep:match('^deps%.(.+)')
-      if match ~= nil then
-        deps[#deps + 1] = fetchPackageData(match)
+    for k, version in pairs(pkg.package) do
+      local pkg = k:match('^deps%.(.+)$')
+      if pkg ~= nil then
+        deps[#deps + 1] = fetchPackageData(pkg, version)[1]
       end
     end
     print('Installing ' .. #deps .. ' additional dependencies')
@@ -310,8 +310,10 @@ elseif command == 'install' then
         if compareVersion(verInfo, dep.package.version) == -1 then
           downloadPackage(dep)
           localPkgs[dep.package.name] = dep.package.version
-          updated = updated + 1
         end
+      else
+        downloadPackage(dep)
+        localPkgs[dep.package.name] = dep.package.version
       end
     end
     downloadPackage(pkg)
@@ -328,7 +330,7 @@ elseif command == 'remove' then
       print('  Removing ' .. k)
       local info = fetchPackageData(k)[1]
       if info == nil then
-        print('ERROR! Cannot find package metadata for ' .. k ..'!')
+        print('ERROR! Cannot find package metadata for ' .. k .. '!')
         print('It will be removed from the registry, but folders and files must be erased manually!')
       else
         local cut = info.package.shortcut
