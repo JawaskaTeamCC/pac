@@ -4,6 +4,14 @@ Jawaska Team's Computercraft code repository.
 
 Contains programs and libraries.
 
+# Installing
+
+Installing pac in a new computer is easy, just run `pastebin run Ume1aeq1` and
+you're done.
+
+It copies a portable version of pac 1.0 and then updates and installs in the
+system.
+
 ## Contributing
 
 Want your package to appear as an official package? Easy:
