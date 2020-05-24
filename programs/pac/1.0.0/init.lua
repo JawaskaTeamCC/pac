@@ -88,25 +88,157 @@ local function ResourceReader(root)
   end
 end
 
+local function parseVersion(ver)
+  return ver:match '(%d+)%.(%d+)%.(%d+)'
+end
+
 ----
--- Looks up repositories and checks package names.
+-- Compares two semantic versions.
+-- @example "1.0.1" > "1.1.0" == false
 ----
-local function searchPackage(name)
+local function compareVersion(aStr, bStr)
+  local a = parseVersion(aStr)
+  local b = parseVersion(bStr)
+  if a[1] > b[1] then
+    return 1
+  elseif a[1] < b[1] then
+    return -1
+  else
+    if a[2] > b[2] then
+      return 1
+    elseif a[2] < b[2] then
+      return -1
+    else
+      if a[3] > b[3] then
+        return 1
+      elseif a[3] < a[3] then
+        return -1
+      else
+        return 0
+      end
+    end
+  end
+end
+
+----
+-- Looks inside a version array, which first element is ignored.
+-- Attempts to retrieve the latest version if no version is provided.
+-- In order to speed up, version array MUST be incrementally sorted, otherwise
+-- there's no guarantee that the found version is the latest.
+----
+local function findLatestVersion(versionArray, version)
+  if version == nil then
+    return versionArray[#versionArray]
+  end
+  local foundVersion = nil
+  for k, v in pairs(versionArray) do
+    if k > 1 then
+      if compareVersion(v, version) == 0 then
+        foundVersion = v
+      end
+    end
+  end
+  return foundVersion or error('Couldn\'t find version ' .. version)
+end
+
+----
+-- Looks up repositories and checks package names by pattern.
+-- Input name must be a match ready string.
+----
+local function searchPackage(pattern, requireVersion)
   local repos = decode '.pac/repos.info'
+  local packages = {}
   for repoName, source in pairs(repos) do
     print('Scanning ' .. repoName)
     local repoRead = ResourceReader(source)
-    local resp = repoRead('/index.info')
-    if resp == nil then error 'Null response' end
-    local index = decodeString(resp:readAll())
-    local repoData = index[name]
-    if repoData ~= nil then
-      local versionData = repoData:split ','
-      for k, v in pairs(versionData) do print(k, v) end
-      return nil
+    local index = nil
+    do
+      local res = repoRead('/index.info')
+      if res == nil then error('Couldn\'t fetch repository index for ' .. pattern .. ' at ' .. source) end
+      index = decodeString(res:readAll())
+    end
+    for name, dataString in pairs(index) do
+      if name:match(pattern) then
+        local data = dataString:split ','
+        local location = data[1]
+        local version = findLatestVersion(data, requireVersion)
+        print('Acquiring ' .. name .. ' v' .. version .. ' info...')
+        local packageData = nil
+        do
+          local res = repoRead(location .. '/' .. version .. '/package.info')
+          if res == nil then error('Couldn\'t fetch package data, bad formed repository. Check out ' .. source .. location .. '/' .. version) end
+          packageData = decodeString(res:readAll())
+        end
+        packages[#packages + 1] = {
+          name = name,
+          repository = {
+            name = repoName,
+            source = source
+          },
+          package = packageData
+        }
+      end
     end
   end
-  return nil
+  return packages
 end
 
-searchPackage 'vector'
+----
+-- Fetches package from package data, downloads to passed folder.
+----
+local function downloadPackage(name, version, folder)
+  local info = searchPackage(name)
+  if not fs.exists(folder) then fs.makeDir(folder) end
+end
+
+----
+-- Converts the given glob to a Lua pattern.
+----
+local function globToPattern(glob)
+  return '^' .. glob:gsub('%.', '%.'):gsub('%*', '.*') .. '$'
+end
+
+local command = ...
+
+if command == 'help' then
+  term.setCursorPos(1, 1)
+  term.clear()
+  print [[USAGE   pac <command> [options]
+Where <command> is one of:
+
+  help
+    Shows this usage
+  
+  update <glob>
+    Updates the desired package
+    <glob> might be a package name or a glob
+    representing packages. Updates matching
+    names to latest version.
+
+  install <package> [version]
+    Installs a package, optionally enforces a
+    version. <package> must be a full qualified
+    package name.
+
+  
+(next)]]
+  os.pullEvent 'key'
+  term.setCursorPos(1, 1)
+  term.clear()
+  print [[
+  remove <package>
+    Removes the package name.
+]]
+elseif command == 'update' then
+  local _, glob = ...
+  print('Updating ' .. glob .. '...')
+  local pattern = globToPattern(glob)
+  local pkgs = searchPackage(pattern)
+  print('Found #' .. (#pkgs) .. ' package/s')
+  for k, v in pairs(pkgs) do
+    print(k, '-->>', v)
+  end
+elseif command == 'install' then
+
+elseif command == 'remove' then
+end

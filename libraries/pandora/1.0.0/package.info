@@ -1,0 +1,8 @@
+name=pandora
+description=A small, portable and easy to use OOP library. With fully fledged operator overload.
+version=1.0.0
+files=init.lua
+author=sigmasoldier
+contact=Contact me at minecraft hehe
+site=Maybe my server
+support=https://github.com/sigmasoldi3r/pandora/issues
