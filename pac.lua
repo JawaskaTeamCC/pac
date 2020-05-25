@@ -92,7 +92,7 @@ local pkg, namesp = parseTarget(target)
 local registryFile = target:gsub('[@/]', '__')
 local info, rawInfo = getPackage(pkg, namesp, version, mode, '/.pac/db/' .. registryFile)
 local toRun = info[mode]
-print('Running ' .. mode)
+print('Running ' .. mode, pkg, namesp)
 assert(toRun ~= nil and type(toRun) == 'function', 'Nothing to be done with "' .. mode .. '"')
 local result = toRun(info, ...)
 if result == nil then
