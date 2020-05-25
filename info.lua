@@ -6,14 +6,11 @@ return {
   version = "1.0.0",
   install = function()
     shell.run('wget', 'https://raw.githubusercontent.com/JawaskaTeamCC/pac/master/pac.lua', '/pac.lua')
-    return true
   end,
   update = function()
     shell.run('wget', 'https://raw.githubusercontent.com/JawaskaTeamCC/pac/master/pac.lua', '/pac.lua')
-    return true
   end,
   remove = function()
     shell.run('rm', '/pac.lua')
-    return true
   end
 }
