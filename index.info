@@ -2,4 +2,6 @@ vector=/libraries/vector,1.0.0
 go=/libraries/go,1.0.0
 inventory=/libraries/inventory,1.0.0
 pandora=/libraries/pandora,1.0.0
-pac=/programs/pac,1.0.0
+pac=/programs/pac,1.0.0,1.1.0
+farmer=/programs/farmer,1.0.0
+jawaska-common=/libraries/jawaska-common,1.0.0

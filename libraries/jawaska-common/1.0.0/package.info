@@ -1,0 +1,8 @@
+name=jawaska-common
+description=A package with common utilities such as string split, .info decoding etc.
+install=lib
+author=sigmasoldier
+contact=Contact me at minecraft
+site=My server hehe
+support=https://github.com/JawaskaTeam/computercraft-programs/issues
+deps.pandora=1.0.0

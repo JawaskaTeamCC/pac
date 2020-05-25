@@ -1,0 +1,10 @@
+name=farmer
+description=An automatic farmland manager, for turtles.
+version=1.0.0
+files=init.lua
+author=sigmasoldier
+contact=contact me at minecraft hehe
+install=bin
+shortcut=farmer
+deps.go=1.0.0
+deps.pandora=1.0.0
