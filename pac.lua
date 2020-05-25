@@ -94,10 +94,14 @@ local info, rawInfo = getPackage(pkg, namesp, version, mode, '/.pac/db/' .. regi
 local toRun = info[mode]
 assert(toRun ~= nil and type(toRun) == 'function', 'Nothing to be done with "' .. mode .. '"')
 local result = toRun(info, ...)
-if mode ~= 'remove' and result then
-  local f = io.open('/.pac/db/' .. registryFile, 'w')
-  f:write(rawInfo)
-  f:close()
-elseif mode == 'remove' and result then
-  shell.run('rm', '/.pac/db/' .. registryFile)
+print('result', result)
+if result then
+  if mode == 'remove' then
+    shell.run('rm', '/.pac/db/' .. registryFile)
+  else
+    local f = io.open('/.pac/db/' .. registryFile, 'w')
+    f:write(rawInfo)
+    f:close()
+    print('Installed')
+  end
 end

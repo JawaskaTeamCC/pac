@@ -42,15 +42,12 @@ return {
   name = "Super duper package",
   install = function()
     -- Download files and copy them!
-    return true
   end,
   remove = function()
     -- Delete them!
-    return true
   end,
   update = function()
     -- I'm told to be updated!
-    return true
   end
 }
 ```
@@ -61,9 +58,7 @@ For example if you do `pac install` the install function is invoked.
 The unique difference is that install and remove will call also register() and
 unregister() functions.
 
-Functions should return `true` if the process went OK. In all cases will cause
-the package info to update in the database except for remove, which will
-remove the entry.
+Functions should return `false` if the process went not OK.
 
 # Versioning
 
