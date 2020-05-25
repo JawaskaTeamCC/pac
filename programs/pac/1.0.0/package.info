@@ -1,8 +1,0 @@
-name=pac
-description=A simple package manager system that downloads libraries. This version is standalone to allow hot install.
-version=1.0.0
-files=init.lua
-author=sigmasoldier
-contact=contact me at minecraft hehe
-install=bin
-shortcut=pac

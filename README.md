@@ -12,73 +12,89 @@ you're done.
 It copies a portable version of pac 1.0 and then updates and installs in the
 system.
 
-## Contributing
+# Structure
 
-Want your package to appear as an official package? Easy:
-+ Fork the repository
-+ Develop your things
-+ Pull request to master **with squash commits**
-+ Get the pull request accepted
+Centralization has been abandoned, packages are now free to use, but official
+packages are contained under this group.
 
-Package installation is advised to be at the own risk of the user, however if
-a package is reported as malicious, harming, or harassing towards a person,
-people group or such, it can be removed, or even rejected before pulling.
-Misleading package names, or package phishing can be also reported.
+This means that you can install any package like:
 
-In the case of misleading package names, if was unintentional it can be
-renamed.
-
-You can also become a moderator in order to help auditing packages.
-
-## Structure
-
-The repository is divided in library folders, containing the version:
-
-Example: `libraries/my-lib/1.0.0`
-
-Inside we should find at least:
-+ Library's entry point at `init.lua`
-+ A file called `package.info` which contains a key-value file.
-
-Example of `package.info` file:
-```properties
-name=my-lib
-description=A simple library!
-author=me
-contact=some@contact
-site=some.site
-version=1.0.0
-files=init.lua
-install=lib
-deps.other-lib=1.0.0
-deps.some-other-lib=1.5.0
+```
+pac install @my-user/my-package
+# or
+pac install official-package
 ```
 
-Implementing package managers should be able to parse this simple key-value
-format, which follows the basic shape of a Java's properties file.
+# Capabilities
 
-All files must be listed as `files=coma,separated,files` in order to implementing
-package managers to download.
+The philosophy of pac has been simplified to it's minimum expression. This means
+that things like dependencies or versioning is primarily controlled by the
+install and update script.
 
-### Dependency versioning
+Pac only needs that at the top of the repository, at master, a `info.lua` file
+is present, which exposes at least the authorship of the package, and the
+install, remove and update functions:
 
-Implementing package managers should note that dependencies use semantic
-versioning. This means that package version should be the latest always inside
-the major version.
-
-Normal versions (Eg: `1.0.0`) are looked up in each repository by order.
-Repositories in order to be valid **must** have an `index.info` file, that is
-a key-value pair file with the names of the packages and their location in the
-folder.
-
-Example of `index.info` file:
-```properties
-my-lib=libraries/my-lib
+```lua
+return {
+  author = "sigmasoldier",
+  description = "Here shall be a description",
+  name = "Super duper package",
+  install = function()
+    -- Download files and copy them!
+    return true
+  end,
+  remove = function()
+    -- Delete them!
+    return true
+  end,
+  update = function()
+    -- I'm told to be updated!
+    return true
+  end
+}
 ```
 
-### About the package.info file
+In fact, what pac does is call the function based on what parameters are passed.
+For example if you do `pac install` the install function is invoked.
 
-Why a custom format? Initially a lua file exposing a table was thought to be
-used, but malicious code can be easily injected.
+The unique difference is that install and remove will call also register() and
+unregister() functions.
 
-To avoid that, package data is provided in a very simplistic file.
+Functions should return `true` if the process went OK. In all cases will cause
+the package info to update in the database except for remove, which will
+remove the entry.
+
+# Versioning
+
+Versioning is simple: The update script will tell what and how to update, so
+the author package responsible of proper handling.
+
+Pac will use, at least with the default scheme, branches and tags if supplied,
+or master if skipped.
+
+This means that if you have a tag `1.0.0` one can run:
+
+```
+pac install my-package 1.0.0
+```
+
+And the `info.lua` file in that tag will be used.
+
+# Extending
+
+By default, pac only supports github scheme, but more schemes can be added as
+modules in order to retrieve them from other repositories (Eg: From gitlab).
+
+## The old format
+
+If you see the tag https://github.com/JawaskaTeam/computercraft-programs/releases/tag/pre-patch
+you can tell that the structure was very different.
+
+The reason behind the change is simple: Simplification.
+
+We've removed two main things that added complexity:
++ Custom data formats (.info file)
++ Complex and fragile versioning system (All need to follow sorted semver.)
+
+For sake of simplicity, ease of maintenance and robustness.
