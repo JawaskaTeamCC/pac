@@ -49,17 +49,29 @@ end
 ----
 local function getPackage(package, namespace, version, mode, registryFile)
   version = version or 'master'
+  local defaultNamesp = namespace == nil
   namespace = namespace or getDefaultNamespace()
   assert(package ~= nil and package:len() > 0, 'Provide a package name!')
   if mode == 'install' then
     local res = http.get('https://raw.githubusercontent.com/' .. namespace .. '/' .. package .. '/' .. version .. '/info.lua')
+    if res == nil then
+      local name = package
+      if defaultNamesp then
+        name = '@' .. namespace .. '/' .. name
+      end
+      error('Couldn\'t get ' .. name)
+    end
     local raw = res:readAll()
-    return loadstring(raw)(), raw
+    local fn = loadstring(raw)
+    setfenv(fn, getfenv())
+    return fn(), raw
   else
     local f = io.open(registryFile, 'r')
     local raw = f:read('*all')
     f:close()
-    return loadstring(raw)(), raw
+    local fn = loadstring(raw)
+    setfenv(fn, getfenv())
+    return fn(), raw
   end
 end
 
