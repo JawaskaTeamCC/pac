@@ -92,10 +92,10 @@ local pkg, namesp = parseTarget(target)
 local registryFile = target:gsub('[@/]', '__')
 local info, rawInfo = getPackage(pkg, namesp, version, mode, '/.pac/db/' .. registryFile)
 local toRun = info[mode]
+print('Running ' .. mode)
 assert(toRun ~= nil and type(toRun) == 'function', 'Nothing to be done with "' .. mode .. '"')
 local result = toRun(info, ...)
-print('result', result)
-if result then
+if result == nil then
   if mode == 'remove' then
     shell.run('rm', '/.pac/db/' .. registryFile)
   else
