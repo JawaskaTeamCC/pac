@@ -67,6 +67,9 @@ local function getPackage(package, namespace, version, mode, registryFile)
     return fn(), raw
   else
     local f = io.open(registryFile, 'r')
+    if f == nil then
+      error('Couldn\'t get registry file ' .. registryFile)
+    end
     local raw = f:read('*all')
     f:close()
     local fn = loadstring(raw)
@@ -87,7 +90,7 @@ end
 local mode, target, version = ...
 local pkg, namesp = parseTarget(target)
 local registryFile = target:gsub('[@/]', '__')
-local info, rawInfo = getPackage(pkg, namesp, version, mode, registryFile)
+local info, rawInfo = getPackage(pkg, namesp, version, mode, '/.pac/db/' .. registryFile)
 local toRun = info[mode]
 assert(toRun ~= nil and type(toRun) == 'function', 'Nothing to be done with "' .. mode .. '"')
 local result = toRun(info, ...)
